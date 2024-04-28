@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1084427633233",
+    "project_id": "fixpert-d5013",
+    "storage_bucket": "fixpert-d5013.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1084427633233:android:cb3d8228596a07fa33ee70",
+        "android_client_info": {
+          "package_name": "com.example.testing"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDP1K_cwQCOCDBNZuQ6W0qJvXAnxO34dvU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
