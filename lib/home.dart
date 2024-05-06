@@ -4,6 +4,7 @@ import 'package:testing/ChooseTheAccountType.dart';
 import 'signup.dart';
 import 'getUsers.dart';
 import 'getServices.dart';
+import 'customerProfile.dart';
 import 'profile.dart';
 import 'search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -48,126 +49,16 @@ class _HomeState extends State<Home> {
   // }
   @override
   Widget build(BuildContext context) {
+    // the list to disply the selected widget
     List<Widget> _widgetOptions = [
-      Text('Home Page',
-          style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+      // first item
+      Text('Home Page',style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+      // second item
       SearchPage(),
-      isLoggedIn
-          ? Text('Chat Page',
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold))
-          : Center(
-              child: Scaffold(
-                appBar: AppBar(),
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text("Sorry!",style: TextStyle(fontSize: 24),),
-                      SizedBox(height: 10,),
-
-                      Text(
-                        "You're Not Logged In",
-                        style: TextStyle(fontSize: 24),
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => Login()));
-                            },
-                            child: Text(
-                              'Login',
-                              style:
-                                  TextStyle(color: Colors.blue, fontSize: 24),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            "or,",
-                            style: TextStyle(fontSize: 24),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ChooseAcountType()));
-                            },
-                            child: Text(
-                              ' Signup',
-                              style:
-                                  TextStyle(color: Colors.blue, fontSize: 24),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
-      isLoggedIn
-          ? Profile(
-              loadData: loadData,
-            )
-          : Center(
-              child: Scaffold(
-                appBar: AppBar(),
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text("Sorry!",style: TextStyle(fontSize: 24),),
-                      SizedBox(height: 10,),
-                      Text(
-                        "You're Not Logged In",
-                        style: TextStyle(fontSize: 24),
-                      ),
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => Login()));
-                            },
-                            child: Text(
-                              'Login',
-                              style:
-                                  TextStyle(color: Colors.blue, fontSize: 24),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            "or,",
-                            style: TextStyle(fontSize: 24),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => ChooseAcountType()));
-                            },
-                            child: Text(
-                              ' Signup',
-                              style:
-                                  TextStyle(color: Colors.blue, fontSize: 24),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-              ),
-            ),
+      // third item
+      isLoggedIn? Text('Chat Page',style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)): LoginOrSignup(),
+      // fourth item
+      isLoggedIn ? CustomerProfile() : LoginOrSignup(),
     ];
 
     return Scaffold(
@@ -213,4 +104,82 @@ class _HomeState extends State<Home> {
               onTap: _onItemTapped,
             )));
   }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This function is to tell the user that he is not logged in so he can login || signup to reach the chat widget or profile//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class LoginOrSignup extends StatelessWidget {
+  const LoginOrSignup({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Scaffold(
+        appBar: AppBar(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                "Sorry!",
+                style: TextStyle(fontSize: 24),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Text(
+                "You're Not Logged In",
+                style: TextStyle(fontSize: 24),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (context) => Login()));
+                    },
+                    child: Text(
+                      'Login',
+                      style: TextStyle(color: Colors.blue, fontSize: 24),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text(
+                    "or,",
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => ChooseAcountType()));
+                    },
+                    child: Text(
+                      ' Signup',
+                      style: TextStyle(color: Colors.blue, fontSize: 24),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // End of LoginOrSignup Function
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }

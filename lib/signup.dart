@@ -15,17 +15,31 @@ class Signup extends StatelessWidget {
   Widget build(BuildContext context) {
     print(accType);
 
+    // The size of screen
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+
+    // Textfield Initialization
     TextEditingController emailController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
     TextEditingController confirm_passwordController = TextEditingController();
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This function to to create new customer account
+//     Singup.php file will receive the user email and password
+//     first the php file will check if the email is exist in customer or worker tables
+//     Then if its not it will insert the new account to datbase
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Future<void> signup() async {
       SharedPreferences sp = await SharedPreferences.getInstance();
       String baseURL = 'https://switch.unotelecom.com/fixpert/signup.php';
-      String email = Uri.encodeComponent(emailController.text).trim();
+      String email = emailController.text.trim();
       String password = Uri.encodeComponent(passwordController.text).trim();
+      print(email);
+      if(email.contains('@gmail.com')){
+        if(password.isNotEmpty){
+      // if the password doesnot match with the repeated one
       if (passwordController.text.trim() !=
           confirm_passwordController.text.trim())
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -33,14 +47,18 @@ class Signup extends StatelessWidget {
           backgroundColor: Colors.red,
           duration: Duration(seconds: 3),
         ));
+      // if the password match
       else {
         String url = '$baseURL?user_email=$email&user_password=$password';
         final response = await http.get(Uri.parse(url));
+        // if the request to api is success
         if (response.statusCode == 200) {
           Map<String, dynamic> responseData = jsonDecode(response.body);
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(responseData['message']),
             duration: Duration(seconds: 3),
+          //   i will check if the message will tell the user that the account is already exist
+          // i will set the background color of the snackbar to red and if not it will be green
             backgroundColor:
                 responseData['message'].toLowerCase().contains('exist')
                     ? Colors.red
@@ -55,6 +73,15 @@ class Signup extends StatelessWidget {
           if (responseData['message'].toLowerCase().contains('welcome')) {
             sp.setBool("loggedIn", true);
 
+            String urlToGetUserId='https://switch.unotelecom.com/fixpert/getUserInfo.php?user_email=$email';
+            final response=await http.get(Uri.parse(urlToGetUserId));
+            if(response.statusCode== 200 ){
+              Map<String , dynamic> responseData=jsonDecode(response.body);
+              sp.setString('user_id', responseData['user_id']);//i save the new user id that create new account
+              sp.setString('username',responseData['username']);
+              sp.setString('address',responseData['address']);
+            }
+            print('signup done');
             // Navigate to the home page to trigger rebuild
             Navigator.pushReplacement(
               context,
@@ -64,23 +91,35 @@ class Signup extends StatelessWidget {
             sp.setBool("loggedIn", false);
           }
         }
+      }}
+      else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Check you entered a password!"),duration: Duration(seconds: 3),backgroundColor: Colors.red,));
+        }
+      }
+      else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Check your email"),duration: Duration(seconds: 3),backgroundColor: Colors.red,));
       }
     }
 
+    // This function will check if the worker is already exist so it will not proceed into the nest step
     Future<void> checkIfWorkerExistst() async {
-      String baseURL ="https://switch.unotelecom.com/fixpert/checkIfWorkerExists.php";
+      String baseURL =
+          "https://switch.unotelecom.com/fixpert/checkIfWorkerExists.php";
       // SharedPreferences sp = await SharedPreferences.getInstance();
-      String email = Uri.encodeComponent(emailController.text).trim();
+      String email = emailController.text.trim();
       String password = Uri.encodeComponent(passwordController.text).trim();
-
-      if (passwordController.text.trim() !=confirm_passwordController.text.trim()){
+// check if the password match the repeated one
+      if(email.contains("@gmail.com")){
+        if(password.isNotEmpty){
+      if (passwordController.text.trim() !=
+          confirm_passwordController.text.trim()) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text("The passwords doesn't match"),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 3),
-        ));}
-      else {
-        String url='$baseURL?user_email=$email';
+        ));
+      } else {
+        String url = '$baseURL?user_email=$email';
         final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
           Map<String, dynamic> responseData = jsonDecode(response.body);
@@ -90,10 +129,21 @@ class Signup extends StatelessWidget {
                   duration: Duration(seconds: 3),
                   backgroundColor: Colors.red,
                 ))
-              :  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Services(email: email,password: password,),));
-
+              : Navigator.of(context).pushReplacement(MaterialPageRoute(
+                  builder: (context) => Services(
+                    email: email,
+                    password: password,
+                  ),
+                ));
+        }
+      }}
+      else{
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Check you entered a password!'),duration: Duration(seconds: 3),backgroundColor: Colors.red,));
 
         }
+      }
+      else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Check your email'),duration: Duration(seconds: 3),backgroundColor: Colors.red,));
       }
     }
 

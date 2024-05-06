@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:testing/home.dart';
 import 'dart:convert';
 import 'ChooseTheAccountType.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:testing/signup.dart';
 
 class Login extends StatefulWidget {
@@ -18,33 +20,47 @@ class _LoginState extends State<Login> {
   TextEditingController passwordController = TextEditingController();
 
   Future<void> login() async {
-    String email = Uri.encodeComponent(emailController.text);
-    String password = Uri.encodeComponent(passwordController.text);
+    SharedPreferences sp= await SharedPreferences.getInstance();
+
+    String email = emailController.text.trim();
+    String password = Uri.encodeComponent(passwordController.text).trim();
     print(email);
     print(password);
-    // if(passwordController.text != confirm_passwordController.text)
-    //   displayError = "password not identical";
-    // else{
+
+    if (email.contains("@gmail.com")){
+      if(password.isNotEmpty){
     String url = '$baseURL?user_email=$email&user_password=$password';
     print(url);
     final response = await http.get(Uri.parse(url));
     if (response.statusCode == 200) {
       Map<String, dynamic> responseData = jsonDecode(response.body);
       if (responseData.containsKey('message')) {
-        // setState(() {
-        //   displayError="";
-        //   displayError=responseData['message'];
-        //
-        // });
+        if(responseData['message'].toLowerCase().contains('succesfully')) {
+          sp.setString('user_id', responseData['id']);
+          sp.setString('username',responseData['username']);
+          sp.setString('address',responseData['address']);
+
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home(),));
+        }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(
             responseData['message'],
           ),
           duration: Duration(seconds: 3),
-          backgroundColor: responseData['message'].toLowerCase().contains('failed') && responseData['message'].toLowerCase().contains("exist") ? Colors.red : Colors.green,
+          backgroundColor: responseData['message'].toLowerCase().contains('failed') || responseData['message'].toLowerCase().contains("exist") ? Colors.red : Colors.green,
         ));
       }
       print(response.body);
+    }}
+      else
+        {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Check you entered a password!'),duration: Duration(seconds: 3),backgroundColor: Colors.red,));
+
+        }
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text( "Check the entered email")
+          ,duration: Duration(seconds: 3),
+          backgroundColor: Colors.red));
     }
     // }
   }

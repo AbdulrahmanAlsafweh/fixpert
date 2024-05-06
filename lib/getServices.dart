@@ -40,7 +40,7 @@ class _ServicesState extends State<Services> {
       });
     }
   }
-
+// this function will insert new worker
   Future<void> signup() async {
     SharedPreferences sp = await SharedPreferences.getInstance();
     String baseURL = 'https://switch.unotelecom.com/fixpert/newWorker.php';
@@ -62,12 +62,20 @@ class _ServicesState extends State<Services> {
 
 
       if (responseData['message'].toLowerCase().contains('ready')) {
-        sp.setBool("loggedIn", true);
+        sp.setBool("loggedIn", true);//we set true to the logged in varuable so i can track if the user is logged in or not
+          String urlToGetUserId='https://switch.unotelecom.com/fixpert/getUserInfo.php?user_email=$email';
+          final response=await http.get(Uri.parse(urlToGetUserId));
+          if(response.statusCode == 200){
+            Map<String , dynamic> responseData=jsonDecode(response.body);
+            sp.setString('user_id', responseData['user_id']);//i save the new user id that create new account
+            sp.setString('username', responseData['username']);
+            sp.setString('address',responseData['address']);
 
+          }
         // Navigate to the home page to trigger rebuild
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Availability()),
+          MaterialPageRoute(builder: (context) => Availability(user_id: responseData['user_id'],)),
         );
       } else {
         sp.setBool("loggedIn", false);

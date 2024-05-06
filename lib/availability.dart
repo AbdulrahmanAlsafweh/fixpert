@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'home.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+
 class Availability extends StatefulWidget {
-  const Availability({super.key});
+  final String? user_id;
+  Availability({Key? key,this.user_id}) : super(key: key);
 
   @override
   State<Availability> createState() => _AvailabilityState();
 }
 
 class _AvailabilityState extends State<Availability> {
-  Future<void> finishAcc()async{
-    String baseUrl='';
+  Future<void> updateAvailability(int availability)async{
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    String user_id = sp.getString('user_id')!;
+    String baseUrl='https://switch.unotelecom.com/fixpert/updateAvailability.php?user_id=$user_id&new_availability=$availability';
+    final response=await http.get(Uri.parse(baseUrl));
+
   }
   @override
   Widget build(BuildContext context) {
@@ -56,7 +65,9 @@ class _AvailabilityState extends State<Availability> {
               ,child:    SizedBox(
                     height: 70,
                     child:
-                    ElevatedButton(onPressed: finishAcc,
+                    ElevatedButton(onPressed:() {
+                      updateAvailability(0);
+                     Navigator.of(context).push(MaterialPageRoute(builder: (context) => Home(),));},
                         child: Text(
                             "Not Now"
                         ),style: ButtonStyle(
@@ -70,7 +81,10 @@ class _AvailabilityState extends State<Availability> {
             Spacer(),
             Padding(padding: EdgeInsets.only(right: 10),child: SizedBox(
               height: 70,
-              child:   ElevatedButton(onPressed: finishAcc,
+              child:   ElevatedButton(onPressed:() {
+                updateAvailability(1);
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => Home(),));
+              },
                 child:
                 Row(
                   children: [
