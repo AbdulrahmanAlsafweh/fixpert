@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
           sp.setString('user_id', responseData['id']);
           sp.setString('username',responseData['username']);
           sp.setString('address',responseData['address']);
-
+          sp.setBool("loggedIn", true);
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home(),));
         }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

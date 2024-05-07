@@ -14,17 +14,21 @@ class _SearchPageState extends State<SearchPage> {
   String baseUrl = "https://switch.unotelecom.com/fixpert/getWorker.php";
   List<dynamic> services = [];
   List<dynamic> worker = [];
-  bool filterAvailable = false;
-  bool isLoading = false; // Flag to indicate data fetching
+  List<int> selectedServiceIds = []; // List to storre selected service ids
+  bool isLoading = false;
 
-  Future<void> searchWorker(String workerName) async {
+  Future<void> searchWorker(String workerName, List<int> selectedServiceIds) async {
     setState(() {
-      isLoading = true; // Set loading flag while fetching data
+      isLoading = true;
     });
     String url = baseUrl;
     if (workerName.isNotEmpty) {
       url = "$baseUrl?workerName=$workerName";
     }
+    if (selectedServiceIds.isNotEmpty) {
+      url +=workerName.isNotEmpty? "&serviceIds=${selectedServiceIds.join(',')}":"?serviceIds=${selectedServiceIds.join(',')}"; // Pass selected service ids as query parameter
+    }
+    print (url);
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
@@ -32,16 +36,15 @@ class _SearchPageState extends State<SearchPage> {
         setState(() {
           worker.clear();
           worker = workerData;
-          isLoading = false; // Clear loading flag after successful fetch
+          isLoading = false;
         });
       } else {
-        // Handle HTTP error (e.g., display error message)
         print('Error fetching worker data: ${response.statusCode}');
       }
     } catch (error) {
-      // Handle other errors (e.g., network issues)
       print('Error searching workers: $error');
     }
+    print(selectedServiceIds);
   }
 
   Future<void> getServices() async {
@@ -50,16 +53,22 @@ class _SearchPageState extends State<SearchPage> {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final servicesData = jsonDecode(response.body);
-        setState(() {
-          services.clear();
-          services = servicesData;
-        });
+        if (servicesData != null) {
+          setState(() {
+            services.clear();
+            services = servicesData.map((service) {
+              service['toggled'] = false;
+              return service;
+            }).toList();
+          });
+        } else {
+          // Handle the case when servicesData is null
+          print('Error: servicesData is null');
+        }
       } else {
-        // Handle HTTP error
         print('Error fetching services data: ${response.statusCode}');
       }
     } catch (error) {
-      // Handle other errors
       print('Error fetching services: $error');
     }
   }
@@ -67,7 +76,7 @@ class _SearchPageState extends State<SearchPage> {
   @override
   void initState() {
     super.initState();
-    searchWorker("");
+    searchWorker("", selectedServiceIds);
     getServices();
   }
 
@@ -84,96 +93,86 @@ class _SearchPageState extends State<SearchPage> {
             child: TextField(
               controller: searchTextController,
               onChanged: (value) {
-                searchWorker(searchTextController.text);
+                searchWorker(searchTextController.text, selectedServiceIds);
               },
               decoration: InputDecoration(
                 labelText: 'Search by worker name',
                 suffixIcon: IconButton(
                   icon: Icon(Icons.search),
                   onPressed: () {
-                    searchWorker(searchTextController.text);
+                    searchWorker(searchTextController.text, selectedServiceIds);
                   },
                 ),
               ),
             ),
           ),
-          // Expanded(child: Row(
-          //   children:<Widget> [
-          //     ListView.builder(itemBuilder: (context, index) {
-          //       return(Text('g'));
-          //     },)
-          //
-          //   ],
-          // )),
-          // Expanded(child: ListView.builder(
-          //   itemCount: worker.length,
-          //   itemBuilder: (context, index) {
-          //     return Text("services[index]['name']");
-          //   },)),
-          SizedBox(
-            height: 10,
-          ),
+          SizedBox(height: 10),
           Container(
-          height: 100,
-            child:
-            ListView.builder(
-
-              padding: EdgeInsets.only(left: 10 ,right: 10),
+            height:screenHeight/14 ,
+            child: ListView.builder(
+              padding: EdgeInsets.only(left: 10, right: 10),
               scrollDirection: Axis.horizontal,
               itemCount: services.length,
-
-              itemBuilder:(context, index) {
-
-              return(Text(services[index]['name'].toString())
-              );
-            },),
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      services[index]['toggled'] = !services[index]['toggled'];
+                      if (services[index]['toggled']) {
+                        selectedServiceIds.add(int.parse(services[index]['id']));
+                      } else {
+                        selectedServiceIds.remove(int.parse(services[index]['id']));
+                      }
+                      searchWorker(searchTextController.text, selectedServiceIds);
+                    });
+                  },
+                  child: Container(
+                    margin: EdgeInsets.all(5),
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: services[index]['toggled'] ? Colors.grey[400] : Colors.grey[200],                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: <Widget> [
+                        services[index]['toggled'] ?
+                        Icon(Icons.cancel_outlined) :
+                        SizedBox(width: 0, height:0 ),
+                                  SizedBox(width: 5,),
+                        Text(services[index]['name'],style: TextStyle(fontSize: 15,fontWeight: FontWeight.w400),),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
-
-          Switch(
-            // thumb color (round icon)
-            activeColor: Colors.amber,
-            activeTrackColor: Colors.cyan,
-            inactiveThumbColor: Colors.blueGrey.shade600,
-            inactiveTrackColor: Colors.grey.shade400,
-            splashRadius: 50.0,
-            // boolean variable value
-            value: filterAvailable,
-            // changes the state of the switch
-
-            onChanged: (value) => setState(() => filterAvailable = value),
-          ),
-          SizedBox(
-            height: 10,
-          ),
-
+          SizedBox(height: 10),
           Expanded(
-              child: ListView.builder(
-            itemCount: worker.length,
-            itemBuilder: (context, index) {
-              return (GestureDetector(
-                child: Padding(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator())
+                : ListView.builder(
+              itemCount: worker.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    // Handle worker tap
+                  },
+                  child: Padding(
                     padding: EdgeInsets.only(left: 5, bottom: 2),
                     child: Container(
+
                       height: screenHeight / 11,
                       child: Row(
                         children: [
-                          // This continer is to indicate if the worker is avialable or not
                           Container(
                             width: 5,
-                            color: (worker[index]['availability']
-                                        .toString()
-                                        .trim() ==
-                                    "1")
+                            color: (worker[index]['availability'].toString().trim() == "1")
                                 ? Colors.green
                                 : Colors.red,
                           ),
                           Image.network(
-                              width: 52,
-                              height: 52,
                               "https://switch.unotelecom.com/fixpert/assets/${worker[index]['profile_pic'].toString()}"),
-                          SizedBox(
-                            width: 10,
-                          ),
+                          SizedBox(width: 10),
                           Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,18 +185,18 @@ class _SearchPageState extends State<SearchPage> {
                                   fontSize: 18,
                                 ),
                               ),
-                              SizedBox(
-                                height: 10,
-                              ),
+                              SizedBox(height: 10),
                               Text(worker[index]['name'].toString())
                             ],
                           )
                         ],
                       ),
-                    )),
-              ));
-            },
-          ))
+                    ),
+                  ),
+                );
+              },
+            ),
+          )
         ],
       ),
     );
