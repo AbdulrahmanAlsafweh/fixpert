@@ -14,6 +14,7 @@ class AddNewWorkerProject extends StatefulWidget {
 
 class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
   List<XFile>? _imageFiles = []; // List to store selected images
+  bool loading=false;
   TextEditingController projectNameController= TextEditingController();
   TextEditingController projectDetailsController=TextEditingController();
   Future<void> _selectImages() async {
@@ -44,12 +45,13 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
       String project_name=projectNameController.text.trim();
       String project_details=projectDetailsController.text.trim();
 
-      if (project_name.isNotEmpty && project_details.isNotEmpty) {
+      if (project_name.isNotEmpty ) {
         // Encode parameters
         String encodedProjectName = Uri.encodeComponent(project_name);
         String encodedProjectDetails = Uri.encodeComponent(project_details);
 
         var url = Uri.parse("https://switch.unotelecom.com/fixpert/addNewWorkerProject.php?worker_id=${widget.worker_id}&project_name=$encodedProjectName");
+        print(url);
         // Check if project details is not empty and add it to the URL if not
         if (encodedProjectDetails.isNotEmpty) {
           url = Uri.parse("$url&project_details=$encodedProjectDetails");
@@ -80,10 +82,18 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
       if (response.statusCode == 200) {
         // Request successful
         print('Images uploaded successfully');
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Project added successfully"),backgroundColor: Colors.green,));
+        setState(() {
+          loading=false;
+        });
         print(response.reasonPhrase);
 
       } else {
         // Request failed
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("There is an error,Try again!"),backgroundColor: Colors.red,));
+        setState(() {
+          loading=false;
+        });
         print('Failed to upload images');
       }
       }
@@ -104,7 +114,7 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return projectNameController.text.isNotEmpty ? AlertDialog(
+                  return  _imageFiles!.isNotEmpty ? ( projectNameController.text.isNotEmpty ? AlertDialog(
                     title: Text("Upload Project"),
                     content: Text("Do you want to upload the project?"),
                     actions: [
@@ -116,6 +126,9 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
                       ),
                       TextButton(
                         onPressed: () {
+                          setState(() {
+                            loading=true;
+                          });
                           _uploadImages(); // Call the method to upload images
                           Navigator.pop(context); // Close the dialog
                         },
@@ -129,6 +142,11 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
                     ) ,
                     content: Text("Please fill the project name",textAlign:TextAlign.center),
 
+                  ))
+                  :AlertDialog(
+                    title: Center(child: Text("Caution!",style: TextStyle(color: Colors.red,fontSize: 18),),),
+                    content: Text("Please add photos then try to upload the project",textAlign:TextAlign.center),
+
                   );
                 },
               );
@@ -138,12 +156,14 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'select images',
         onPressed: () {
           _selectImages();
         },
         child: Icon(Icons.add),
       ),
-      body:SingleChildScrollView(
+      body:
+      SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
@@ -242,6 +262,11 @@ class _AddNewWorkerProjectState extends State<AddNewWorkerProject> {
                   ),
                 ],
               ),
+            loading?
+                Center(
+                  child:CircularProgressIndicator() ,
+                )
+            :SizedBox(height: 0,),
             // if (_imageFiles != null && _imageFiles!.isNotEmpty)
             //   Expanded(
             //     child: ListView.builder(
