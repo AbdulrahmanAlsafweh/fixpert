@@ -39,7 +39,14 @@ class _LoginState extends State<Login> {
           sp.setString('user_id', responseData['id']);
           sp.setString('username',responseData['username']);
           sp.setString('address',responseData['address']);
+          sp.setString('acc_type', responseData['acc_type']);
           sp.setBool("loggedIn", true);
+          if(responseData['acc_type'] == 'worker'){
+            sp.setInt('availability',int.parse(responseData['availability']));
+            sp.setString('open_time',responseData['open_time']);
+            sp.setString('about', responseData['about']);
+            sp.setString('profile_pic',responseData['profile_pic']);
+          }
           Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => Home(),));
         }
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(

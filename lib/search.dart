@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -16,7 +17,7 @@ class _SearchPageState extends State<SearchPage> {
   List<dynamic> worker = [];
   List<int> selectedServiceIds = []; // List to storre selected service ids
   bool isLoading = false;
-
+  bool isFirstResponseDone=false;
   Future<void> searchWorker(String workerName, List<int> selectedServiceIds) async {
     setState(() {
       isLoading = true;
@@ -53,6 +54,7 @@ class _SearchPageState extends State<SearchPage> {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final servicesData = jsonDecode(response.body);
+        isFirstResponseDone=true;
         if (servicesData != null) {
           setState(() {
             services.clear();
@@ -86,7 +88,7 @@ class _SearchPageState extends State<SearchPage> {
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Column(
+      body: isFirstResponseDone ? Column(
         children: <Widget>[
           Padding(
             padding: const EdgeInsets.all(15.0),
@@ -112,7 +114,7 @@ class _SearchPageState extends State<SearchPage> {
             child: ListView.builder(
               padding: EdgeInsets.only(left: 10, right: 10),
               scrollDirection: Axis.horizontal,
-              itemCount: services.length,
+              itemCount: 6,
               itemBuilder: (context, index) {
                 return GestureDetector(
                   onTap: () {
@@ -144,6 +146,7 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                 );
               },
+
             ),
           ),
           SizedBox(height: 10),
@@ -198,7 +201,10 @@ class _SearchPageState extends State<SearchPage> {
             ),
           )
         ],
-      ),
+      ) :Center(
+            child: LoadingAnimationWidget.inkDrop(
+                color: Colors.blueAccent,
+                size: ((screenWidth / 15) + (screenHeight / 15)))),
     );
   }
 }

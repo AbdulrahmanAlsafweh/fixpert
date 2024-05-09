@@ -87,6 +87,8 @@ class _EditCustomerProfileState extends State<EditCustomerProfile> {
       Map<String,dynamic> result=jsonDecode(response.body);
       print(result['message']);
       print(url);
+      _fetchInitialValues();
+      print(address);
     }
   }
   @override

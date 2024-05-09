@@ -8,7 +8,7 @@ import 'customerProfile.dart';
 import 'profile.dart';
 import 'search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'workerProfile.dart';
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -19,7 +19,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   bool isLoggedIn = false;
-
+  String acc_type='';
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -31,6 +31,9 @@ class _HomeState extends State<Home> {
     SharedPreferences sp = await SharedPreferences.getInstance();
     setState(() {
       isLoggedIn = sp.getBool('loggedIn') ?? false;
+      print('hellomister');
+      acc_type=sp.getString('acc_type')!;
+      print("Account type is $acc_type");
       print(isLoggedIn);
     });
   }
@@ -58,7 +61,7 @@ class _HomeState extends State<Home> {
       // third item
       isLoggedIn? Text('Chat Page',style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)): LoginOrSignup(),
       // fourth item
-      isLoggedIn ? CustomerProfile() : LoginOrSignup(),
+      isLoggedIn ? (acc_type=='customer'? CustomerProfile() : WorkerProfile()) : LoginOrSignup(),
     ];
 
     return Scaffold(

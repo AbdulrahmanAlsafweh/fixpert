@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'home.dart';
 import 'editCustomerProfile.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:flutter_slider_drawer/flutter_slider_drawer.dart';
 
 class CustomerProfile extends StatefulWidget {
@@ -20,7 +19,7 @@ class _CustomerProfileState extends State<CustomerProfile> {
   bool loading = false;
   String baseUrl =
       'https://switch.unotelecom.com/fixpert/getCustomerProfileInfo.php';
-  String username = 's';
+  String username = 'username';
   String email = '';
   String picUri = "";
   String id = '';
@@ -116,7 +115,10 @@ class _CustomerProfileState extends State<CustomerProfile> {
     return MaterialApp(
       home: Scaffold(
 
-          body: loading ? SliderDrawer(
+          body:
+          loading  ?
+
+          SliderDrawer(
             isDraggable: true,
         slideDirection: SlideDirection.RIGHT_TO_LEFT,
         appBar: SliderAppBar(
@@ -175,19 +177,17 @@ class _CustomerProfileState extends State<CustomerProfile> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(
-              height: screenHeight / 20,
-            ),
+            // SizedBox(
+            //   height: screenHeight / 20,
+            // ),
             Row(
               children: [
                 Padding(
                   padding: EdgeInsets.only(left: 10),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: Image.network(
+                  child: CircleAvatar(
+                    radius: screenWidth / 7, // Adjust radius as needed
+                    backgroundImage: NetworkImage(
                       "https://switch.unotelecom.com/fixpert/assets/$picUri",
-                      width: screenWidth / 4,
-                      height: screenHeight / 4,
                     ),
                   ),
                 ),
@@ -282,10 +282,12 @@ class _CustomerProfileState extends State<CustomerProfile> {
             //     child: Text("Logout")),
           ],
         ),
-      ):Center(
+      )
+              :Center(
             child: LoadingAnimationWidget.inkDrop(
                 color: Colors.blueAccent,
-                size: ((screenWidth / 15) + (screenHeight / 15))))),
+                size: ((screenWidth / 15) + (screenHeight / 15))))
+    ),
     );
   }
 }
